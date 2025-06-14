@@ -3,25 +3,23 @@ class Toolbar {
     this.app = app;
     const container = document.getElementById("toolbar-container");
 
-    // ** THE FIX IS HERE **
-    // First, create the HTML content of the toolbar.
     container.innerHTML = `
-            <button id="play-button">Play</button>
+            <button id="play-button" title="Play/Stop">►</button>
             <div class="control-group">
                 <label for="bpm-input">BPM</label>
-                <input type="number" id="bpm-input">
+                <input type="number" id="bpm-input" title="Beats Per Minute">
             </div>
             <div class="control-group">
                 <label for="master-volume">Volume</label>
-                <input type="range" id="master-volume" min="0" max="100">
+                <input type="range" id="master-volume" min="0" max="100" title="Master Volume">
             </div>
-            <button id="undo-button" disabled>Undo</button>
-            <button id="redo-button" disabled>Redo</button>
-            <button id="mixer-button">Mixer</button>
-            <button id="export-json-button">Export JSON</button>
+            <button id="undo-button" disabled title="Undo (Ctrl+Z)">↶</button>
+            <button id="redo-button" disabled title="Redo (Ctrl+Y)">↷</button>
+            <button id="mixer-button" title="Show Mixer">Mixer</button>
+            <button id="export-json-button" title="Export Song Data">Export</button>
         `;
 
-    // Now that the elements exist in the DOM, get references to them.
+    // Get references to all elements
     this.playButton = document.getElementById("play-button");
     this.bpmInput = document.getElementById("bpm-input");
     this.volumeSlider = document.getElementById("master-volume");
@@ -30,7 +28,7 @@ class Toolbar {
     this.mixerButton = document.getElementById("mixer-button");
     this.exportButton = document.getElementById("export-json-button");
 
-    // Finally, attach the event listeners.
+    // Add event listeners
     this.playButton.onclick = () => this.app.togglePlayback();
     this.bpmInput.onchange = () =>
       this.app.performAction(() => {
@@ -45,11 +43,8 @@ class Toolbar {
   }
 
   render() {
-    this.playButton.textContent = this.app.songPlayer.isPlaying
-      ? "Stop"
-      : "Play";
+    this.playButton.innerHTML = this.app.songPlayer.isPlaying ? "⏹" : "►";
     this.bpmInput.value = this.app.songData.bpm;
-
     this.undoButton.disabled = this.app.history.undoStack.length <= 1;
     this.redoButton.disabled = this.app.history.redoStack.length === 0;
   }

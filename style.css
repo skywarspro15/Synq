@@ -1,23 +1,49 @@
+/* --- Global & Root Variables --- */
 :root {
-  --bg-main: #252526;
-  --bg-panel: #2d2d30;
-  --bg-header: #3e3e42;
-  --border-color: #4a4a4a;
-  --text-light: #cccccc;
-  --accent-color: #0e639c;
-  --note-color: #d1692a;
-  --playhead-color: rgba(255, 0, 0, 0.7);
+  --bg-darkest: #181818;
+  --bg-dark: #222222;
+  --bg-medium: #2a2a2e;
+  --bg-light: #3e3e42;
+  --border-color: #111111;
+  --accent-primary: #3d8eff;
+  --accent-secondary: #ff7b00;
+  --text-primary: #e0e0e0;
+  --text-secondary: #9e9e9e;
+  --shadow-color: rgba(0, 0, 0, 0.5);
 }
+
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-color: var(--bg-main);
-  color: var(--text-light);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  background-color: var(--bg-darkest);
+  color: var(--text-primary);
   overflow: hidden;
   height: 100vh;
 }
+* {
+  box-sizing: border-box;
+}
+
+/* --- Custom Scrollbars --- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-light);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* --- App Layout --- */
 #app-container {
   display: flex;
   flex-direction: column;
@@ -26,28 +52,41 @@ body {
 .panel {
   position: relative;
   overflow: auto;
-  background-color: var(--bg-panel);
+  background-color: var(--bg-dark);
   flex-grow: 1;
 }
+
+/* --- Toolbar --- */
 #toolbar-container {
   padding: 8px;
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
-  background-color: var(--bg-header);
+  background: linear-gradient(to bottom, var(--bg-light), var(--bg-medium));
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
+  box-shadow: 0 2px 5px var(--shadow-color);
+  z-index: 200;
 }
-#toolbar-container button,
-#toolbar-container input {
-  background-color: var(--bg-panel);
+#toolbar-container button {
+  background: var(--bg-medium);
   border: 1px solid var(--border-color);
-  color: var(--text-light);
-  border-radius: 4px;
-  padding: 6px 10px;
+  color: var(--text-primary);
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-size: 1.2em;
+  line-height: 1;
+  transition: all 0.1s ease;
+}
+#toolbar-container button:hover:not(:disabled) {
+  background-color: var(--bg-light);
+  border-color: #000;
+}
+#toolbar-container button:active:not(:disabled) {
+  transform: scale(0.95);
 }
 #toolbar-container button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 .control-group {
@@ -55,13 +94,30 @@ body {
   align-items: center;
   gap: 8px;
 }
+.control-group label {
+  color: var(--text-secondary);
+  font-weight: bold;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+#toolbar-container input[type="number"],
+#toolbar-container input[type="range"] {
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+/* --- Arrangement & Track Headers --- */
 #arrangement-container {
   display: flex;
 }
 #track-headers-container {
   width: 200px;
   flex-shrink: 0;
-  background-color: #333;
+  background: var(--bg-medium);
+  border-right: 1px solid var(--border-color);
   overflow-y: hidden;
 }
 #arrangement-grid-wrapper {
@@ -69,88 +125,101 @@ body {
   overflow: auto;
   position: relative;
 }
-.track-header,
-.grid-row {
+.track-header {
   height: 60px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  padding-left: 10px;
+  padding-left: 15px;
   border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+  background-color: var(--bg-medium);
+  transition: background-color 0.2s;
 }
 .grid-row {
-  padding-left: 0;
+  height: 60px;
   position: relative;
-}
-.track-header {
-  font-weight: bold;
+  background-image: linear-gradient(var(--bg-dark) 98%, var(--bg-light) 99%);
+  background-size: 100% 60px;
 }
 .playhead {
   position: absolute;
   width: 2px;
-  background-color: var(--playhead-color);
+  background-color: var(--accent-secondary);
   z-index: 5;
   pointer-events: none;
   top: 0;
 }
 .pattern-clip {
   position: absolute;
-  background-color: var(--accent-color);
-  height: 90%;
-  top: 5%;
+  background: linear-gradient(to bottom, var(--accent-primary), #2a73d2);
+  border: 1px solid #1c5299;
+  height: 80%;
+  top: 10%;
   border-radius: 4px;
   cursor: pointer;
   overflow: hidden;
   box-sizing: border-box;
+  box-shadow: 0 1px 3px var(--shadow-color);
 }
 .pattern-clip.selected {
-  border: 2px solid var(--note-color);
+  border: 2px solid var(--accent-secondary);
 }
 .pattern-clip svg {
   width: 100%;
   height: 100%;
 }
 .pattern-clip svg rect {
-  fill: rgba(255, 255, 255, 0.4);
+  fill: rgba(255, 255, 255, 0.3);
 }
+
+/* --- Floating Windows --- */
 .floating-window {
   display: none;
   position: absolute;
   top: 20%;
   left: 20%;
-  background-color: var(--bg-panel);
+  background-color: var(--bg-dark);
   border: 1px solid var(--border-color);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px var(--shadow-color);
   z-index: 100;
   display: flex;
   flex-direction: column;
   resize: both;
-  overflow: auto; /* Changed to auto for plugin UIs */
-  min-width: 300px;
-  min-height: 200px;
+  overflow: auto;
+  width: 60vw;
+  height: 40vh;
+  min-width: 350px;
+  min-height: 250px;
 }
 .window-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  background-color: var(--bg-header);
+  padding: 8px 12px;
+  background: linear-gradient(to bottom, var(--bg-light), var(--bg-medium));
   cursor: move;
   font-weight: bold;
   user-select: none;
   flex-shrink: 0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom: 1px solid var(--border-color);
 }
 .window-close-btn {
   background: none;
   border: none;
-  color: var(--text-light);
-  font-size: 20px;
+  color: var(--text-secondary);
+  font-size: 24px;
   cursor: pointer;
+  line-height: 1;
 }
 .plugin-ui-content {
-  padding: 10px;
-} /* Wrapper for plugin UIs */
+  padding: 15px;
+}
 
+/* --- Piano Roll --- */
 #piano-roll-container {
   flex-grow: 1;
   display: flex;
@@ -164,7 +233,7 @@ body {
 }
 #piano-roll-keyboard {
   width: 80px;
-  background-color: #1e1e1e;
+  background-color: #111;
   flex-shrink: 0;
   overflow-y: auto;
 }
@@ -176,13 +245,21 @@ body {
 }
 #piano-roll-grid {
   position: relative;
+  background-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px
+  );
+  background-size: 25px 100%;
 }
 #piano-roll-content .playhead {
   left: 200px;
   height: 100%;
+  background-color: var(--accent-secondary);
 }
 #piano-roll-grid .grid-row {
   height: 20px;
+  border-bottom: 1px solid #1a1a1a;
 }
 .piano-key {
   height: 20px;
@@ -190,102 +267,133 @@ body {
   text-align: right;
   padding-right: 5px;
   box-sizing: border-box;
-  border-bottom: 1px solid var(--bg-main);
+  border: 1px solid #111;
 }
 .piano-key.white {
-  background-color: #bababa;
+  background-color: #c4c4c4;
   color: #333;
 }
 .piano-key.black {
-  background-color: #505050;
+  background-color: #3d3d3d;
   color: #fff;
+  border: 1px solid #000;
 }
 .note {
   position: absolute;
   height: 90%;
-  background: var(--note-color);
+  background: var(--accent-secondary);
+  border: 1px solid #b85a00;
   border-radius: 2px;
   box-sizing: border-box;
   cursor: pointer;
 }
 
+/* --- Mixer (Rewritten Styles) --- */
 #mixer-container {
   display: flex;
   gap: 10px;
   padding: 10px;
   overflow-x: auto;
   flex-grow: 1;
+  background-color: #1e1e1e;
 }
 .channel-strip {
-  width: 100px;
+  width: 90px;
   flex-shrink: 0;
-  background-color: var(--bg-header);
+  background-color: #2e2e2e;
   padding: 10px;
   border-radius: 4px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
+  border: 1px solid var(--border-color);
 }
 .channel-strip label {
   display: block;
   font-weight: bold;
   font-size: 14px;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 100%;
 }
 .volume-slider {
-  -webkit-appearance: slider-vertical;
+  -webkit-appearance: none;
+  width: 100px;
+  height: 8px;
+  background: #1a1a1a;
+  border-radius: 4px;
+  transform: rotate(-90deg) translateX(-45px);
+  margin-bottom: 50px;
+}
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
   width: 20px;
-  height: 100px;
-  margin-bottom: 10px;
+  height: 25px;
+  background: #c4c4c4;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid #111;
 }
 .pan-control {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
   width: 100%;
+  margin-bottom: 15px;
+}
+.pan-control label {
   font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+  font-weight: normal;
+  text-transform: uppercase;
 }
 .pan-slider {
   -webkit-appearance: none;
   width: 100%;
-  height: 8px;
-  background: #555;
-  border-radius: 4px;
-  margin: 5px 0;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    var(--accent-primary),
+    #fff,
+    var(--accent-primary)
+  );
+  border-radius: 3px;
+  border: 1px solid var(--border-color);
 }
 .pan-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #ccc;
+  width: 14px;
+  height: 14px;
+  background: #e0e0e0;
   border-radius: 50%;
+  border: 1px solid #111;
   cursor: pointer;
+  margin-top: -4px;
 }
 .pan-display {
   font-size: 11px;
   color: #aaa;
-  margin-bottom: 10px;
+  margin-top: 5px;
 }
 .fx-list {
   font-size: 10px;
-  background-color: #222;
+  background-color: #1e1e1e;
   border-radius: 3px;
   padding: 5px;
   width: 100%;
-  min-height: 40px;
+  flex-grow: 1;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 .fx-item {
-  background-color: var(--accent-color);
-  padding: 2px 4px;
+  background-color: var(--accent-primary);
+  padding: 3px 5px;
   border-radius: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -297,8 +405,8 @@ body {
 .edit-fx-btn {
   padding: 1px 3px;
   font-size: 9px;
-  background: #333;
-  border: 1px solid #555;
-  color: #ccc;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  color: #fff;
   cursor: pointer;
 }

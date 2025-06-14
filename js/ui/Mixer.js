@@ -14,9 +14,6 @@ class Mixer {
     this.window.querySelector(".window-close-btn").onclick = () => this.hide();
     this.initDrag();
 
-    // ** THE FIX IS HERE **
-    // The event listener is attached ONCE when the Mixer is created.
-    // It listens for clicks on the container and checks if the clicked element was an "Edit" button.
     this.container.addEventListener("click", (e) => {
       if (e.target.classList.contains("edit-fx-btn")) {
         const trackName = e.target.dataset.trackName;
@@ -54,21 +51,24 @@ class Mixer {
 
       const strip = document.createElement("div");
       strip.className = "channel-strip";
+
+      // ** THE FIX IS HERE: New, clearer HTML structure for the pan control **
       strip.innerHTML = `
                 <label>${track.name}</label>
                 <input type="range" class="volume-slider" min="0" max="1.5" step="0.01" value="${
                   track.volume
                 }">
+                <br> <br> 
                 <div class="pan-control">
-                    <span>L</span>
+                    <label>PAN</label>
                     <input type="range" class="pan-slider" min="-1" max="1" step="0.01" value="${
                       track.pan
                     }">
-                    <span>R</span>
                 </div>
                 <span class="pan-display">${parseFloat(track.pan).toFixed(
                   2
                 )}</span>
+
                 <div class="fx-list">${fxItemsHtml}</div>
             `;
 
