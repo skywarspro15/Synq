@@ -1,0 +1,304 @@
+:root {
+  --bg-main: #252526;
+  --bg-panel: #2d2d30;
+  --bg-header: #3e3e42;
+  --border-color: #4a4a4a;
+  --text-light: #cccccc;
+  --accent-color: #0e639c;
+  --note-color: #d1692a;
+  --playhead-color: rgba(255, 0, 0, 0.7);
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-light);
+  overflow: hidden;
+  height: 100vh;
+}
+#app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.panel {
+  position: relative;
+  overflow: auto;
+  background-color: var(--bg-panel);
+  flex-grow: 1;
+}
+#toolbar-container {
+  padding: 8px;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+#toolbar-container button,
+#toolbar-container input {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-light);
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+#toolbar-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#arrangement-container {
+  display: flex;
+}
+#track-headers-container {
+  width: 200px;
+  flex-shrink: 0;
+  background-color: #333;
+  overflow-y: hidden;
+}
+#arrangement-grid-wrapper {
+  flex-grow: 1;
+  overflow: auto;
+  position: relative;
+}
+.track-header,
+.grid-row {
+  height: 60px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.grid-row {
+  padding-left: 0;
+  position: relative;
+}
+.track-header {
+  font-weight: bold;
+}
+.playhead {
+  position: absolute;
+  width: 2px;
+  background-color: var(--playhead-color);
+  z-index: 5;
+  pointer-events: none;
+  top: 0;
+}
+.pattern-clip {
+  position: absolute;
+  background-color: var(--accent-color);
+  height: 90%;
+  top: 5%;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.pattern-clip.selected {
+  border: 2px solid var(--note-color);
+}
+.pattern-clip svg {
+  width: 100%;
+  height: 100%;
+}
+.pattern-clip svg rect {
+  fill: rgba(255, 255, 255, 0.4);
+}
+.floating-window {
+  display: none;
+  position: absolute;
+  top: 20%;
+  left: 20%;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  resize: both;
+  overflow: auto; /* Changed to auto for plugin UIs */
+  min-width: 300px;
+  min-height: 200px;
+}
+.window-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: var(--bg-header);
+  cursor: move;
+  font-weight: bold;
+  user-select: none;
+  flex-shrink: 0;
+}
+.window-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 20px;
+  cursor: pointer;
+}
+.plugin-ui-content {
+  padding: 10px;
+} /* Wrapper for plugin UIs */
+
+#piano-roll-container {
+  flex-grow: 1;
+  display: flex;
+  overflow: hidden;
+}
+#piano-roll-content {
+  display: flex;
+  flex-grow: 1;
+  overflow: auto;
+  position: relative;
+}
+#piano-roll-keyboard {
+  width: 80px;
+  background-color: #1e1e1e;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+#piano-roll-grid-wrapper {
+  flex-grow: 1;
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+#piano-roll-grid {
+  position: relative;
+}
+#piano-roll-content .playhead {
+  left: 200px;
+  height: 100%;
+}
+#piano-roll-grid .grid-row {
+  height: 20px;
+}
+.piano-key {
+  height: 20px;
+  font-size: 11px;
+  text-align: right;
+  padding-right: 5px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--bg-main);
+}
+.piano-key.white {
+  background-color: #bababa;
+  color: #333;
+}
+.piano-key.black {
+  background-color: #505050;
+  color: #fff;
+}
+.note {
+  position: absolute;
+  height: 90%;
+  background: var(--note-color);
+  border-radius: 2px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+#mixer-container {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  overflow-x: auto;
+  flex-grow: 1;
+}
+.channel-strip {
+  width: 100px;
+  flex-shrink: 0;
+  background-color: var(--bg-header);
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.channel-strip label {
+  display: block;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.volume-slider {
+  -webkit-appearance: slider-vertical;
+  width: 20px;
+  height: 100px;
+  margin-bottom: 10px;
+}
+.pan-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 10px;
+}
+.pan-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #555;
+  border-radius: 4px;
+  margin: 5px 0;
+}
+.pan-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.pan-display {
+  font-size: 11px;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+.fx-list {
+  font-size: 10px;
+  background-color: #222;
+  border-radius: 3px;
+  padding: 5px;
+  width: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.fx-item {
+  background-color: var(--accent-color);
+  padding: 2px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.edit-fx-btn {
+  padding: 1px 3px;
+  font-size: 9px;
+  background: #333;
+  border: 1px solid #555;
+  color: #ccc;
+  cursor: pointer;
+}

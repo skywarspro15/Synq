@@ -1,0 +1,71 @@
+{
+  "title": "Plugin Demo Song",
+  "bpm": 128,
+  "instruments": [
+    {
+      "name": "Main Synth",
+      "plugin": "BasicSynth",
+      "params": { "waveform": "sawtooth" }
+    },
+    {
+      "name": "Kick Synth",
+      "plugin": "BasicSynth",
+      "params": { "waveform": "triangle" }
+    }
+  ],
+  "patterns": {
+    "kick_pattern": [
+      { "time": 0, "pitch": "C2", "duration": 0.2 },
+      { "time": 1, "pitch": "C2", "duration": 0.2 },
+      { "time": 2, "pitch": "C2", "duration": 0.2 },
+      { "time": 3, "pitch": "C2", "duration": 0.2 }
+    ],
+    "lead_pattern_A": [
+      { "time": 0.75, "pitch": "G4", "duration": 0.2 },
+      { "time": 1, "pitch": "C5", "duration": 0.4 },
+      { "time": 1.75, "pitch": "G4", "duration": 0.2 },
+      { "time": 2.5, "pitch": "A#4", "duration": 0.4 },
+      { "time": 3.25, "pitch": "G4", "duration": 0.2 },
+      { "time": 3.75, "pitch": "F4", "duration": 0.2 }
+    ]
+  },
+  "tracks": [
+    {
+      "name": "Kick Track",
+      "instrument": "Kick Synth",
+      "volume": 1.0,
+      "pan": 0,
+      "fx": []
+    },
+    {
+      "name": "Lead Track",
+      "instrument": "Main Synth",
+      "volume": 0.6,
+      "pan": 0,
+      "fx": [
+        {
+          "plugin": "Filter",
+          "params": { "type": "lowpass", "frequency": 800, "q": 5 }
+        },
+        {
+          "plugin": "Delay",
+          "params": { "delayTime": 0.468, "feedback": 0.4, "wet": 0.3 }
+        }
+      ]
+    }
+  ],
+  "arrangement": [
+    {
+      "track": "Kick Track",
+      "pattern": "kick_pattern",
+      "startTime": 0,
+      "repeat": 4
+    },
+    {
+      "track": "Lead Track",
+      "pattern": "lead_pattern_A",
+      "startTime": 0,
+      "repeat": 4
+    }
+  ]
+}
