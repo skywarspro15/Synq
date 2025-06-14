@@ -11,13 +11,11 @@
   --text-secondary: #9e9e9e;
   --shadow-color: rgba(0, 0, 0, 0.5);
 }
-
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: var(--bg-darkest);
   color: var(--text-primary);
   overflow: hidden;
@@ -26,7 +24,6 @@ body {
 * {
   box-sizing: border-box;
 }
-
 /* --- Custom Scrollbars --- */
 ::-webkit-scrollbar {
   width: 10px;
@@ -42,7 +39,6 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
-
 /* --- App Layout --- */
 #app-container {
   display: flex;
@@ -55,7 +51,6 @@ body {
   background-color: var(--bg-dark);
   flex-grow: 1;
 }
-
 /* --- Toolbar --- */
 #toolbar-container {
   padding: 8px;
@@ -68,7 +63,8 @@ body {
   box-shadow: 0 2px 5px var(--shadow-color);
   z-index: 200;
 }
-#toolbar-container button {
+#toolbar-container button,
+#toolbar-container input {
   background: var(--bg-medium);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
@@ -108,7 +104,6 @@ body {
   border-radius: 4px;
   padding: 4px 6px;
 }
-
 /* --- Arrangement & Track Headers --- */
 #arrangement-container {
   display: flex;
@@ -125,22 +120,24 @@ body {
   overflow: auto;
   position: relative;
 }
-.track-header {
+.track-header,
+.grid-row {
   height: 60px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   padding-left: 15px;
   border-bottom: 1px solid var(--border-color);
-  font-weight: bold;
   background-color: var(--bg-medium);
-  transition: background-color 0.2s;
 }
 .grid-row {
-  height: 60px;
+  padding-left: 0;
   position: relative;
   background-image: linear-gradient(var(--bg-dark) 98%, var(--bg-light) 99%);
   background-size: 100% 60px;
+}
+.track-header {
+  font-weight: bold;
 }
 .playhead {
   position: absolute;
@@ -173,7 +170,7 @@ body {
   fill: rgba(255, 255, 255, 0.3);
 }
 
-/* --- Floating Windows --- */
+/* --- Floating & Modal Windows --- */
 .floating-window {
   display: none;
   position: absolute;
@@ -193,13 +190,13 @@ body {
   min-width: 350px;
   min-height: 250px;
 }
-.window-header {
+.window-header,
+.modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
   background: linear-gradient(to bottom, var(--bg-light), var(--bg-medium));
-  cursor: move;
   font-weight: bold;
   user-select: none;
   flex-shrink: 0;
@@ -207,7 +204,11 @@ body {
   border-top-right-radius: 8px;
   border-bottom: 1px solid var(--border-color);
 }
-.window-close-btn {
+.window-header {
+  cursor: move;
+}
+.window-close-btn,
+.modal-close-btn {
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -217,6 +218,45 @@ body {
 }
 .plugin-ui-content {
   padding: 15px;
+}
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 500;
+  justify-content: center;
+  align-items: center;
+}
+.modal-dialog {
+  background-color: var(--bg-medium);
+  border-radius: 8px;
+  box-shadow: 0 5px 20px #000;
+  width: 90%;
+  max-width: 400px;
+  overflow: hidden;
+}
+.modal-content {
+  padding: 15px;
+}
+#plugin-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.plugin-picker-item {
+  background-color: var(--bg-light);
+  padding: 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-weight: bold;
+}
+.plugin-picker-item:hover {
+  background-color: var(--accent-primary);
 }
 
 /* --- Piano Roll --- */
@@ -288,7 +328,7 @@ body {
   cursor: pointer;
 }
 
-/* --- Mixer (Rewritten Styles) --- */
+/* --- Mixer --- */
 #mixer-container {
   display: flex;
   gap: 10px;
@@ -326,7 +366,7 @@ body {
   background: #1a1a1a;
   border-radius: 4px;
   transform: rotate(-90deg) translateX(-45px);
-  margin-bottom: 50px;
+  margin-bottom: 5px;
 }
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -342,7 +382,7 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-bottom: 15px;
+  margin: 15px 0;
 }
 .pan-control label {
   font-size: 10px;
@@ -390,6 +430,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  margin-top: 10px;
 }
 .fx-item {
   background-color: var(--accent-primary);
@@ -402,11 +443,37 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-.edit-fx-btn {
-  padding: 1px 3px;
-  font-size: 9px;
+.edit-fx-btn,
+.remove-fx-btn {
+  padding: 1px 4px;
+  font-size: 12px;
+  line-height: 1;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(0, 0, 0, 0.3);
   color: #fff;
   cursor: pointer;
+}
+.remove-fx-btn {
+  font-weight: bold;
+}
+.mixer-footer {
+  margin-top: auto;
+  padding-top: 10px;
+  width: 100%;
+}
+.add-fx-btn {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px dashed var(--text-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.add-fx-btn:hover {
+  background-color: var(--accent-primary);
+  color: #fff;
+  border-style: solid;
 }

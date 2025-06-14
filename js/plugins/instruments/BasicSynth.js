@@ -1,5 +1,6 @@
 class BasicSynth extends BasePlugin {
   static pluginName = "BasicSynth";
+  static isInstrument = true; // This is an instrument plugin
 
   constructor(audioContext, initialParams = {}) {
     super(audioContext);

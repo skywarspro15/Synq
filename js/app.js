@@ -13,6 +13,7 @@ class App {
     this.arrangement = new Arrangement(this);
     this.pianoRoll = new PianoRoll(this);
     this.mixer = new Mixer(this);
+    this.pluginPicker = new PluginPicker();
 
     this.init();
   }
@@ -31,12 +32,10 @@ class App {
         }
       };
 
-      // **FIX 1: Volume initialization logic restored here**
       const savedVolume = localStorage.getItem(this.VOLUME_STORAGE_KEY);
       const initialVolume = savedVolume ? parseFloat(savedVolume) : 80;
       this.toolbar.volumeSlider.value = initialVolume;
-      this.setMasterVolume(initialVolume); // Call the restored method
-
+      this.setMasterVolume(initialVolume);
       console.log("DAW Initialized.");
     } catch (error) {
       console.error("Failed to initialize app:", error);
@@ -45,16 +44,10 @@ class App {
 
   async loadSongData(data, isInitialLoad = false) {
     this.songData = data;
-
     await this.audioEngine.loadProject(this.songData);
     await this.songPlayer.loadSong(this.songData);
-
     this.state.selectedTrack = this.songData.tracks[0]?.name;
-
-    if (isInitialLoad) {
-      this.history.saveState();
-    }
-
+    if (isInitialLoad) this.history.saveState();
     this.renderAllUI();
   }
 
@@ -62,9 +55,7 @@ class App {
     this.toolbar.render();
     this.arrangement.render();
     this.mixer.render();
-    if (this.pianoRoll.window.style.display === "flex") {
-      this.pianoRoll.render();
-    }
+    if (this.pianoRoll.window.style.display === "flex") this.pianoRoll.render();
   }
 
   performAction(actionFn) {
@@ -73,24 +64,42 @@ class App {
     this.renderAllUI();
   }
 
-  togglePlayback() {
-    // **FIX 2: Resume AudioContext on the first user gesture**
-    if (this.audioEngine.audioContext.state === "suspended") {
-      this.audioEngine.audioContext.resume();
+  async performAudioGraphAction(actionFn) {
+    actionFn();
+    await this.audioEngine.loadProject(this.songData);
+    this.history.saveState();
+    this.renderAllUI();
+  }
+
+  async promptAddFxToTrack(trackName) {
+    const availableFx = Object.keys(window.DAW_PLUGINS).filter(
+      (p) => !window.DAW_PLUGINS[p].isInstrument
+    );
+    try {
+      const pluginName = await this.pluginPicker.show(availableFx);
+      await this.performAudioGraphAction(() => {
+        const track = this.songData.tracks.find((t) => t.name === trackName);
+        const FxPlugin = window.DAW_PLUGINS[pluginName];
+        if (track && FxPlugin) {
+          track.fx.push({
+            plugin: pluginName,
+            params: FxPlugin.getDefaults(),
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error); // User cancelled the picker
     }
-
-    this.songPlayer.isPlaying ? this.songPlayer.stop() : this.songPlayer.play();
-    this.toolbar.render();
   }
 
-  // **FIX 1 (cont.): Volume control method restored**
-  setMasterVolume(volumeValue) {
-    // volumeValue is 0-100 from the slider
-    this.audioEngine.setMasterVolume(volumeValue / 100);
-    localStorage.setItem(this.VOLUME_STORAGE_KEY, volumeValue);
+  removeFxFromTrack(trackName, fxIndex) {
+    this.performAudioGraphAction(() => {
+      const track = this.songData.tracks.find((t) => t.name === trackName);
+      if (track && track.fx[fxIndex]) {
+        track.fx.splice(fxIndex, 1);
+      }
+    });
   }
-
-  // --- The rest of the methods are unchanged ---
 
   toggleNoteLogic(pitch, time) {
     if (!this.state.selectedPattern) return;
@@ -125,6 +134,7 @@ class App {
       }
     }
   }
+
   setTrackVolume(trackName, volume) {
     const track = this.songData.tracks.find((t) => t.name === trackName);
     if (track) track.volume = volume;
@@ -135,6 +145,12 @@ class App {
     if (track) track.pan = pan;
     this.audioEngine.setTrackPan(trackName, pan);
   }
+
+  setMasterVolume(volumeValue) {
+    this.audioEngine.setMasterVolume(volumeValue / 100);
+    localStorage.setItem(this.VOLUME_STORAGE_KEY, volumeValue);
+  }
+
   selectPattern(patternName) {
     this.state.selectedPattern = patternName;
     if (patternName) {
@@ -146,6 +162,9 @@ class App {
     this.renderAllUI();
   }
   auditionNote(pitch) {
+    if (this.audioEngine.audioContext.state === "suspended") {
+      this.audioEngine.audioContext.resume();
+    }
     if (!this.state.selectedPattern) return;
     const trackName = this.songData.arrangement.find(
       (c) => c.pattern === this.state.selectedPattern
@@ -156,6 +175,13 @@ class App {
     if (instrumentName) {
       this.audioEngine.auditionNote(instrumentName, pitch);
     }
+  }
+  togglePlayback() {
+    if (this.audioEngine.audioContext.state === "suspended") {
+      this.audioEngine.audioContext.resume();
+    }
+    this.songPlayer.isPlaying ? this.songPlayer.stop() : this.songPlayer.play();
+    this.toolbar.render();
   }
   exportToJson() {
     const dataStr =

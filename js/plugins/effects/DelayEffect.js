@@ -1,6 +1,14 @@
 class DelayEffect extends BasePlugin {
   static pluginName = "Delay";
 
+  static getDefaults() {
+    return {
+      delayTime: 0.5,
+      feedback: 0.25,
+      wet: 0.5,
+    };
+  }
+
   constructor(audioContext, initialParams = {}) {
     super(audioContext);
     this.delayNode = this.audioContext.createDelay(1.0);
@@ -16,7 +24,7 @@ class DelayEffect extends BasePlugin {
     this.wetNode.connect(this.output);
     this.input.connect(this.output);
 
-    this.setParams(initialParams);
+    this.setParams({ ...DelayEffect.getDefaults(), ...initialParams });
   }
 
   setParams(params) {
@@ -27,7 +35,6 @@ class DelayEffect extends BasePlugin {
     if (params.wet !== undefined) this.wetNode.gain.value = params.wet;
   }
 
-  // ** THE FIX IS HERE **
   getUI() {
     const container = document.createElement("div");
     container.className = "plugin-ui-content";

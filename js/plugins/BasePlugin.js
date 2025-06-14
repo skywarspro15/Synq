@@ -1,8 +1,15 @@
 class BasePlugin {
   constructor(audioContext) {
     this.audioContext = audioContext;
-    this.input = null; // Entry point for audio signal
-    this.output = null; // Exit point for audio signal
+    this.input = null;
+    this.output = null;
+  }
+
+  // A plugin is an effect by default
+  static isInstrument = false;
+
+  static getDefaults() {
+    return {};
   }
 
   connect(destination) {
@@ -22,7 +29,7 @@ class BasePlugin {
   }
   getUI() {
     return null;
-  } // Return null if no UI
+  }
   destroy() {
     this.disconnect();
   }

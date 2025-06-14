@@ -1,12 +1,20 @@
 class FilterEffect extends BasePlugin {
   static pluginName = "Filter";
 
+  static getDefaults() {
+    return {
+      type: "lowpass",
+      frequency: 12000,
+      q: 1,
+    };
+  }
+
   constructor(audioContext, initialParams = {}) {
     super(audioContext);
     this.filterNode = this.audioContext.createBiquadFilter();
     this.input = this.filterNode;
     this.output = this.filterNode;
-    this.setParams(initialParams);
+    this.setParams({ ...FilterEffect.getDefaults(), ...initialParams });
   }
 
   setParams(params) {
