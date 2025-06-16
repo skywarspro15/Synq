@@ -3,46 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Web DAW</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Synq</title>
   </head>
-  <body>
-    <div id="app-container">
-      <div id="toolbar-container"></div>
-      <div id="arrangement-container" class="panel"></div>
-    </div>
-
-    <!-- Floating Windows -->
-    <div id="piano-roll-window" class="floating-window"></div>
-    <div id="mixer-window" class="floating-window"></div>
-    <div id="plugin-windows-container"></div>
-
-    <!-- Plugin Picker Modal -->
-    <div id="plugin-picker-modal" class="modal-overlay">
-      <div class="modal-dialog">
-        <div class="modal-header">
-          <h3>Select an Effect</h3>
-          <button class="modal-close-btn">×</button>
-        </div>
-        <div class="modal-content" id="plugin-picker-list"></div>
-      </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="js/AudioEngine.js"></script>
-    <script src="js/SongPlayer.js"></script>
-    <script src="js/HistoryManager.js"></script>
-    <script src="js/plugins/PluginManager.js"></script>
-    <script src="js/plugins/BasePlugin.js"></script>
-    <script src="js/plugins/instruments/BasicSynth.js"></script>
-    <script src="js/plugins/effects/FilterEffect.js"></script>
-    <script src="js/plugins/effects/DelayEffect.js"></script>
-    <script src="js/ui/Toolbar.js"></script>
-    <script src="js/ui/Arrangement.js"></script>
-    <script src="js/ui/PianoRoll.js"></script>
-    <script src="js/ui/Mixer.js"></script>
-    <!-- The new PluginPicker must be loaded -->
-    <script src="js/ui/PluginPicker.js"></script>
-    <script src="js/app.js"></script>
-  </body>
+  <body></body>
+  <script type="module" src="js/core.js"></script>
 </html>

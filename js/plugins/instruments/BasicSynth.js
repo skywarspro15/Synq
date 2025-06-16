@@ -1,9 +1,11 @@
-class BasicSynth extends BasePlugin {
-  static pluginName = "BasicSynth";
-  static isInstrument = true; // This is an instrument plugin
+import BasePlugin from "../BasePlugin.js";
 
-  constructor(audioContext, initialParams = {}) {
-    super(audioContext);
+export default class BasicSynth extends BasePlugin {
+  static pluginName = "BasicSynth";
+  static isInstrument = true;
+
+  constructor(playbackContext, initialParams = {}) {
+    super(playbackContext);
 
     this.oscillator = this.audioContext.createOscillator();
     this.gain = this.audioContext.createGain();
@@ -25,10 +27,8 @@ class BasicSynth extends BasePlugin {
   play({ pitch, time, duration }) {
     const freq = this.hertz(pitch);
     if (!freq) return;
-
     const attackTime = 0.02;
     const releaseTime = 0.3;
-
     this.oscillator.frequency.setValueAtTime(freq, time);
     this.gain.gain.cancelScheduledValues(time);
     this.gain.gain.setValueAtTime(0, time);
@@ -36,16 +36,17 @@ class BasicSynth extends BasePlugin {
     this.gain.gain.linearRampToValueAtTime(0, time + duration + releaseTime);
   }
 
+  playImmediate({ pitch, duration = 0.2 }) {
+    this.play({ pitch, time: this.audioContext.currentTime, duration });
+  }
+
   getUI() {
     const container = document.createElement("div");
     container.className = "plugin-ui-content";
     container.innerHTML = `<h3>BasicSynth</h3><p>Waveform: <select id="waveform"><option>sine</option><option>square</option><option>sawtooth</option><option>triangle</option></select></p>`;
-
     const selector = container.querySelector("#waveform");
     selector.value = this.oscillator.type;
-    selector.onchange = () => {
-      this.setParams({ waveform: selector.value });
-    };
+    selector.onchange = () => this.setParams({ waveform: selector.value });
     return container;
   }
 
@@ -72,4 +73,3 @@ class BasicSynth extends BasePlugin {
     return null;
   }
 }
-registerPlugin(BasicSynth);

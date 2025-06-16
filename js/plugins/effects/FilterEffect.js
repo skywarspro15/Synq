@@ -1,4 +1,6 @@
-class FilterEffect extends BasePlugin {
+import BasePlugin from "../BasePlugin.js";
+
+export default class FilterEffect extends BasePlugin {
   static pluginName = "Filter";
 
   static getDefaults() {
@@ -44,4 +46,3 @@ class FilterEffect extends BasePlugin {
     return container;
   }
 }
-registerPlugin(FilterEffect);

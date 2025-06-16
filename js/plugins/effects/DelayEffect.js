@@ -1,4 +1,6 @@
-class DelayEffect extends BasePlugin {
+import BasePlugin from "../BasePlugin.js";
+
+export default class DelayEffect extends BasePlugin {
   static pluginName = "Delay";
 
   static getDefaults() {
@@ -63,4 +65,3 @@ class DelayEffect extends BasePlugin {
     return container;
   }
 }
-registerPlugin(DelayEffect);
