@@ -51,6 +51,7 @@ export default class BasicSynth extends BasePlugin {
   }
 
   hertz(pitch) {
+    // mf writing in the hertz :broken_heart: :sob:
     const NOTES = {
       C: 261.63,
       "C#": 277.18,

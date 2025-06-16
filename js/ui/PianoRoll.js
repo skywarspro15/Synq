@@ -1,5 +1,11 @@
 import Html from "../libs/html.js";
 import BaseWindow from "./BaseWindow.js";
+import {
+  createLabel,
+  createSelect,
+  createCheckbox,
+  createSlider,
+} from "./components.js";
 
 const DEFAULT_PIXELS_PER_BEAT = 80;
 const NOTE_HEIGHT = 13;
@@ -19,10 +25,7 @@ const PITCH_NAMES = [
   "C",
 ];
 const DEFAULT_NOTE_DURATION_S = 0.2;
-const SCALES = {
-  major: [0, 2, 4, 5, 7, 9, 11],
-  minor: [0, 2, 3, 5, 7, 8, 10],
-};
+const SCALES = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10] };
 
 export default class PianoRoll {
   constructor(pattern, patternStartTime, songPlayer, instrument, onDataChange) {
@@ -34,6 +37,7 @@ export default class PianoRoll {
     this.parentElement = document.body;
     this.song = songPlayer.song;
 
+    const toolbar = this._createToolbar();
     this.window = new BaseWindow(
       `Piano Roll: ${pattern.instrument}`,
       this.parentElement,
@@ -42,6 +46,7 @@ export default class PianoRoll {
         left: "100px",
         width: "70%",
         height: "500px",
+        toolbar,
       }
     );
 
@@ -51,12 +56,10 @@ export default class PianoRoll {
     this.quantizeValue = 1 / 4;
     this.scaleSnap = true;
     this.zoomLevel = 1.0;
-
     this.playhead = null;
     this.gridContainer = null;
     this.gridLinesContainer = null;
     this.notesContainer = null;
-
     this.patternDurationSeconds = this._getPatternDurationInSeconds();
     this.octaveRange = this._calculateOctaveRange();
     this.scaleNoteIndices = this._getScaleNoteIndices();
@@ -91,24 +94,14 @@ export default class PianoRoll {
 
   _timeStringToSeconds(timeString) {
     const [bar, beat, tick] = timeString.split(":").map(Number);
-    const beatsPerBar = parseInt(this.song.timeSignature.split("/")[0], 10);
-    const secondsPerBeat = 60.0 / this.song.bpm;
-    const ticksPerBeat = this.song.ticksPerBeat || 480;
-    return (
-      ((bar - 1) * beatsPerBar + (beat - 1) + tick / ticksPerBeat) *
-      secondsPerBeat
-    );
+    return ((bar - 1) * 4 + (beat - 1) + tick / 480) * (60.0 / this.song.bpm);
   }
 
   _secondsToTimeString(seconds) {
-    const beatsPerBar = parseInt(this.song.timeSignature.split("/")[0]);
-    const secondsPerBeat = 60.0 / this.song.bpm;
-    const totalBeats = seconds / secondsPerBeat;
-    const bar = Math.floor(totalBeats / beatsPerBar) + 1;
-    const beat = Math.floor(totalBeats % beatsPerBar) + 1;
-    const ticks = Math.round(
-      (totalBeats * this.song.ticksPerBeat) % this.song.ticksPerBeat
-    );
+    const totalBeats = seconds / (60.0 / this.song.bpm);
+    const bar = Math.floor(totalBeats / 4) + 1;
+    const beat = Math.floor(totalBeats % 4) + 1;
+    const ticks = Math.round((totalBeats * 480) % 480);
     return `${bar}:${beat}:${ticks}`;
   }
 
@@ -119,11 +112,10 @@ export default class PianoRoll {
         this._timeStringToSeconds(note.startTime) + note.duration;
       if (noteEndTime > maxTime) maxTime = noteEndTime;
     });
-    const beatsPerBar = parseInt(this.song.timeSignature.split("/")[0], 10);
-    const secondsPerBar = (60.0 / this.song.bpm) * beatsPerBar;
     return Math.max(
-      secondsPerBar,
-      Math.ceil(maxTime / secondsPerBar) * secondsPerBar
+      (60.0 / this.song.bpm) * 4,
+      Math.ceil(maxTime / ((60.0 / this.song.bpm) * 4)) *
+        ((60.0 / this.song.bpm) * 4)
     );
   }
 
@@ -169,19 +161,22 @@ export default class PianoRoll {
         this.playhead.style({ display: "none" });
       }
     };
-    this.songPlayer.on("timeupdate", update);
+    const updateRef = update.bind(this);
+    this.songPlayer.on("timeupdate", updateRef);
     this.songPlayer.on("stop", () => this.playhead.style({ display: "none" }));
+    this.window.onClose = () => {
+      this.songPlayer.off("timeupdate", updateRef);
+    };
     update(this.songPlayer.playheadPosition);
   }
 
   addNote(pitch, startTimeSeconds) {
     this.instrument.playImmediate({ pitch });
-    const newNote = {
+    this.pattern.notes.push({
       startTime: this._secondsToTimeString(startTimeSeconds),
       pitch,
       duration: DEFAULT_NOTE_DURATION_S,
-    };
-    this.pattern.notes.push(newNote);
+    });
     this.onDataChange();
     this.renderNotes();
   }
@@ -199,7 +194,7 @@ export default class PianoRoll {
 
   deselectNote() {
     if (!this.selectedNote) return;
-    this.selectedNote.element.style({ border: "1px solid #a3c9e8" });
+    this.selectedNote.element.classOff("selected");
     if (this.selectedNote.resizeHandle)
       this.selectedNote.resizeHandle.cleanup();
     this.selectedNote = null;
@@ -214,17 +209,14 @@ export default class PianoRoll {
       data: noteData,
       resizeHandle: null,
     };
-    noteDiv.style({ border: "1px solid #ffdd88" });
+    noteDiv.classOn("selected");
     const resizeHandle = new Html("div")
-      .style({
-        position: "absolute",
-        top: "0",
-        right: "-3px",
-        width: "6px",
-        height: "100%",
-        cursor: "ew-resize",
-        "z-index": 11,
-      })
+      .classOn("piano-roll__note-resize-handle")
+      .on(
+        "mouseover",
+        (e) => (e.target.style.backgroundColor = "rgba(255,255,100,0.3)")
+      )
+      .on("mouseout", (e) => (e.target.style.backgroundColor = "transparent"))
       .appendTo(noteDiv);
     this.selectedNote.resizeHandle = resizeHandle;
     this.enableResizing(resizeHandle, noteDiv, noteData);
@@ -239,11 +231,10 @@ export default class PianoRoll {
       const rect = this.gridContainer.elm.getBoundingClientRect();
       const mouseOffsetX = e.clientX - noteDiv.elm.getBoundingClientRect().left;
       const mouseOffsetY = e.clientY - noteDiv.elm.getBoundingClientRect().top;
-      const secondsPerBeat = 60.0 / this.song.bpm;
       const onMouseMove = (moveEvent) => {
         if (!this.isMoving) return;
-        const scrollLeft = this.window.contentArea.elm.scrollLeft;
-        const scrollTop = this.window.contentArea.elm.scrollTop;
+        const scrollLeft = this.window.contentArea.elm.scrollLeft,
+          scrollTop = this.window.contentArea.elm.scrollTop;
         const gridX = moveEvent.clientX - rect.left + scrollLeft - mouseOffsetX;
         const gridY = moveEvent.clientY - rect.top + scrollTop - mouseOffsetY;
         const snappedPitch = this._yToPitch(gridY, this.scaleSnap);
@@ -253,17 +244,20 @@ export default class PianoRoll {
           Math.round(gridX / this.pixelsPerBeat / this.quantizeValue) *
             this.quantizeValue
         );
-        const snappedLeft = beatPosition * this.pixelsPerBeat;
-        noteDiv.style({ top: `${snappedTop}px`, left: `${snappedLeft}px` });
+        noteDiv.style({
+          top: `${snappedTop}px`,
+          left: `${beatPosition * this.pixelsPerBeat}px`,
+        });
       };
       const onMouseUp = () => {
         this.isMoving = false;
-        const finalTop = noteDiv.elm.offsetTop;
-        const finalLeft = noteDiv.elm.offsetLeft;
-        noteData.pitch = this._yToPitch(finalTop);
-        const beatPosition = Math.max(0, finalLeft / this.pixelsPerBeat);
+        noteData.pitch = this._yToPitch(noteDiv.elm.offsetTop);
+        const beatPosition = Math.max(
+          0,
+          noteDiv.elm.offsetLeft / this.pixelsPerBeat
+        );
         noteData.startTime = this._secondsToTimeString(
-          beatPosition * secondsPerBeat
+          beatPosition * (60.0 / this.song.bpm)
         );
         this.onDataChange();
         this.renderNotes();
@@ -279,23 +273,25 @@ export default class PianoRoll {
     handle.on("mousedown", (e) => {
       e.stopPropagation();
       this.isResizing = true;
-      const secondsPerBeat = 60.0 / this.song.bpm;
-      const startX = e.clientX;
-      const startWidth = noteElement.elm.offsetWidth;
+      const startX = e.clientX,
+        startWidth = noteElement.elm.offsetWidth;
       const onMouseMove = (moveEvent) => {
         if (!this.isResizing) return;
-        const deltaX = moveEvent.clientX - startX;
-        noteElement.style({ width: `${Math.max(10, startWidth + deltaX)}px` });
+        noteElement.style({
+          width: `${Math.max(10, startWidth + (moveEvent.clientX - startX))}px`,
+        });
       };
       const onMouseUp = () => {
         this.isResizing = false;
-        const finalWidth = noteElement.elm.offsetWidth;
         const newDurationInBeats = Math.max(
           this.quantizeValue,
-          Math.round(finalWidth / this.pixelsPerBeat / this.quantizeValue) *
-            this.quantizeValue
+          Math.round(
+            noteElement.elm.offsetWidth /
+              this.pixelsPerBeat /
+              this.quantizeValue
+          ) * this.quantizeValue
         );
-        noteData.duration = newDurationInBeats * secondsPerBeat;
+        noteData.duration = newDurationInBeats * (60.0 / this.song.bpm);
         this.onDataChange();
         this.renderNotes();
         document.removeEventListener("mousemove", onMouseMove);
@@ -308,9 +304,12 @@ export default class PianoRoll {
 
   redraw() {
     this.gridLinesContainer.clear();
-    const totalBeats = this.patternDurationSeconds / (60.0 / this.song.bpm);
-    const gridWidth = totalBeats * this.pixelsPerBeat;
-    this.gridContainer.style({ width: `${gridWidth}px` });
+    this.gridContainer.style({
+      width: `${
+        (this.patternDurationSeconds / (60.0 / this.song.bpm)) *
+        this.pixelsPerBeat
+      }px`,
+    });
     this.renderGridLines();
     this.renderNotes();
   }
@@ -320,23 +319,13 @@ export default class PianoRoll {
     const secondsPerBeat = 60.0 / this.song.bpm;
     this.pattern.notes.forEach((note) => {
       const top = this._pitchToY(note.pitch);
-      const startTimeInSeconds = this._timeStringToSeconds(note.startTime);
-      const left = (startTimeInSeconds / secondsPerBeat) * this.pixelsPerBeat;
+      const left =
+        (this._timeStringToSeconds(note.startTime) / secondsPerBeat) *
+        this.pixelsPerBeat;
       const width = (note.duration / secondsPerBeat) * this.pixelsPerBeat;
-      const noteDiv = new Html("div").style({
-        position: "absolute",
-        top: `${top}px`,
-        left: `${left}px`,
-        width: `${width - 2}px`,
-        height: `${NOTE_HEIGHT - 2}px`,
-        "background-color": "#6fa8dc",
-        border: "1px solid #a3c9e8",
-        cursor: "move",
-        "border-radius": "2px",
-        "box-sizing": "border-box",
-        "z-index": 10,
-        "margin-top": "1px",
-      });
+      const noteDiv = new Html("div")
+        .classOn("piano-roll__note")
+        .style({ top: `${top}px`, left: `${left}px`, width: `${width - 2}px` });
       this.enableMoving(noteDiv, note);
       noteDiv.on("mousedown", (e) => {
         e.stopPropagation();
@@ -374,106 +363,55 @@ export default class PianoRoll {
     }
   }
 
-  renderControls() {
-    const toolbar = new Html("div")
-      .style({
-        padding: "5px",
-        "background-color": "#333",
-        display: "flex",
-        "align-items": "center",
-        gap: "15px",
-      })
-      .prependTo(this.window.window);
-    new Html("label")
-      .text("Quantize:")
-      .style({ "font-size": "12px" })
+  _createToolbar() {
+    const toolbar = new Html("div");
+    createLabel("Quantize:").appendTo(toolbar);
+    createSelect(
+      ["1/16", "1/8", "1/4", "1/2", "1"].map((v) => ({
+        text: v,
+        value: eval(v),
+      })),
+      (e) => (this.quantizeValue = parseFloat(e.target.value))
+    )
+      .val(this.quantizeValue)
       .appendTo(toolbar);
-    const quantizeSelect = new Html("select")
-      .on(
-        "change",
-        () => (this.quantizeValue = parseFloat(quantizeSelect.getValue()))
-      )
-      .appendTo(toolbar);
-    ["1/16", "1/8", "1/4", "1/2", "1"].forEach((val) =>
-      new Html("option")
-        .attr({ value: eval(val) })
-        .text(val)
-        .appendTo(quantizeSelect)
-    );
-    quantizeSelect.val(this.quantizeValue);
-    const scaleSnapLabel = new Html("label")
-      .style({
-        display: "flex",
-        "align-items": "center",
-        gap: "5px",
-        cursor: "pointer",
-        "font-size": "12px",
-      })
-      .text("Scale Snap")
-      .appendTo(toolbar);
-    const scaleSnapCheck = new Html("input")
-      .attr({ type: "checkbox" })
-      .on("change", () => (this.scaleSnap = scaleSnapCheck.elm.checked))
-      .prependTo(scaleSnapLabel);
-    scaleSnapCheck.elm.checked = this.scaleSnap;
-    new Html("label")
-      .text("Zoom:")
-      .style({ "font-size": "12px" })
-      .appendTo(toolbar);
-    new Html("input")
-      .attr({
-        type: "range",
-        min: 0.5,
-        max: 4,
-        step: 0.1,
-        value: this.zoomLevel,
-      })
-      .on("input", (e) => {
+    createCheckbox(
+      "Scale Snap",
+      this.scaleSnap,
+      (e) => (this.scaleSnap = e.target.checked)
+    ).appendTo(toolbar);
+    createLabel("Zoom:").appendTo(toolbar);
+    createSlider(
+      { min: 0.5, max: 4, step: 0.1, value: this.zoomLevel },
+      (e) => {
         this.zoomLevel = parseFloat(e.target.value);
         this.redraw();
-      })
-      .appendTo(toolbar);
+      }
+    ).appendTo(toolbar);
+    return toolbar;
   }
 
   renderContent() {
-    this.renderControls();
     const content = this.window.contentArea;
-    content.style({ "background-color": "#222", overflow: "auto" });
-
     const scrollingWrapper = new Html("div")
-      .style({ position: "relative", display: "flex" })
+      .classOn("piano-roll__scrolling-wrapper")
       .appendTo(content);
 
+    // Z-INDEX FIX: Keyboard z-index must be higher than the playhead's z-index.
     const keyboard = new Html("div")
-      .style({
-        width: `${KEYBOARD_WIDTH}px`,
-        "flex-shrink": 0,
-        "background-color": "#444",
-        position: "sticky",
-        top: 0,
-        left: 0,
-        "z-index": 25,
-      })
+      .classOn("piano-roll__keyboard")
+      .style({ "z-index": 21 })
       .appendTo(scrollingWrapper);
 
     this.gridContainer = new Html("div")
-      .style({ position: "relative", "flex-grow": 1 })
+      .classOn("piano-roll__grid-container")
       .appendTo(scrollingWrapper);
-
-    const totalNoteSlots =
-      (this.octaveRange.max - this.octaveRange.min + 1) * 12;
-    const gridHeight = totalNoteSlots * NOTE_HEIGHT;
+    const gridHeight =
+      (this.octaveRange.max - this.octaveRange.min + 1) * 12 * NOTE_HEIGHT;
     this.gridContainer.style({ height: `${gridHeight}px` });
 
     const gridBackground = new Html("div")
-      .style({
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        "z-index": 0,
-      })
+      .classOn("piano-roll__grid-background")
       .appendTo(this.gridContainer);
 
     for (let o = this.octaveRange.max; o >= this.octaveRange.min; o--) {
@@ -481,26 +419,16 @@ export default class PianoRoll {
         const pitch = `${noteName}${o}`;
         const isBlackKey = noteName.includes("#");
         new Html("div")
-          .style({
-            height: `${NOTE_HEIGHT}px`,
-            "background-color": isBlackKey ? "#555" : "#777",
-            "box-sizing": "border-box",
-            "border-bottom": "1px solid #333",
-            cursor: "pointer",
-          })
+          .classOn("piano-roll__keyboard-key")
+          .style({ "background-color": isBlackKey ? "#555" : "#777" })
           .on("mousedown", () => this.instrument.playImmediate({ pitch }))
           .appendTo(keyboard);
-        const noteIndexInOctave = i % 12;
-        const isInScale = this.scaleNoteIndices.includes(noteIndexInOctave);
+        const isInScale = this.scaleNoteIndices.includes(i % 12);
         let rowColor = isBlackKey ? "#2a2a2a" : "#3a3a3a";
         if (isInScale) rowColor = isBlackKey ? "#3a4a5a" : "#4a5a6a";
         new Html("div")
-          .style({
-            height: `${NOTE_HEIGHT}px`,
-            "background-color": rowColor,
-            "box-sizing": "border-box",
-            "border-bottom": "1px solid #222",
-          })
+          .classOn("piano-roll__grid-row")
+          .style({ "background-color": rowColor })
           .appendTo(gridBackground);
       });
     }
@@ -529,31 +457,22 @@ export default class PianoRoll {
     this.gridContainer.on("click", (e) => {
       if (this.isMoving) return;
       this.deselectNote();
-      const scrollLeft = content.elm.scrollLeft;
-      const scrollTop = content.elm.scrollTop;
+      const scrollLeft = scrollingWrapper.elm.scrollLeft,
+        scrollTop = scrollingWrapper.elm.scrollTop;
       const rect = this.gridContainer.elm.getBoundingClientRect();
       const x = e.clientX - rect.left + scrollLeft;
       const y = e.clientY - rect.top + scrollTop;
       const pitch = this._yToPitch(y, this.scaleSnap);
-      const secondsPerBeat = 60.0 / this.song.bpm;
       const beatPosition =
         Math.round(x / this.pixelsPerBeat / this.quantizeValue) *
         this.quantizeValue;
-      this.addNote(pitch, beatPosition * secondsPerBeat);
+      this.addNote(pitch, beatPosition * (60.0 / this.song.bpm));
     });
 
+    // Z-INDEX FIX: The playhead's z-index is now correctly placed.
     this.playhead = new Html("div")
-      .style({
-        position: "absolute",
-        top: "0",
-        left: "0",
-        width: "2px",
-        height: `${gridHeight}px`,
-        "background-color": "rgba(255, 80, 80, 0.8)",
-        "z-index": 20,
-        "pointer-events": "none",
-        display: "none",
-      })
+      .classOn("piano-roll-playhead")
+      .style({ height: `${gridHeight}px`, display: "none" })
       .appendTo(this.gridContainer);
   }
 }

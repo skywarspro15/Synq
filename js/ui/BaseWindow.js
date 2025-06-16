@@ -1,9 +1,14 @@
 import Html from "../libs/html.js";
+import { createCloseButton } from "./components.js";
 
 const MIN_WINDOW_WIDTH = 300;
 const MIN_WINDOW_HEIGHT = 150;
 
 export default class BaseWindow {
+  // Static properties to manage z-index across all windows
+  static highestZ = 1000;
+  static windows = [];
+
   constructor(title, parentElement, options = {}) {
     this.parentElement = parentElement;
     this.title = title;
@@ -12,6 +17,8 @@ export default class BaseWindow {
       left: "50px",
       width: "80%",
       height: "400px",
+      controls: [],
+      toolbar: null,
       ...options,
     };
 
@@ -23,92 +30,74 @@ export default class BaseWindow {
     this.render();
     this.makeDraggable();
     this.makeResizable();
+
+    BaseWindow.windows.push(this);
+    this.bringToFront();
+  }
+
+  bringToFront() {
+    BaseWindow.highestZ++;
+    this.window.style({ "z-index": BaseWindow.highestZ });
+  }
+
+  close() {
+    if (this.onClose) this.onClose();
+    this.window.cleanup();
+    // Remove from the static list to prevent memory leaks
+    BaseWindow.windows = BaseWindow.windows.filter((w) => w !== this);
   }
 
   render() {
     this.window = new Html("div")
+      .classOn("daw-window")
       .style({
-        position: "absolute",
         top: this.options.top,
         left: this.options.left,
         width: this.options.width,
         height: this.options.height,
-        "min-width": `${MIN_WINDOW_WIDTH}px`,
-        "min-height": `${MIN_WINDOW_HEIGHT}px`,
-        "background-color": "#2c2c2c",
-        border: "1px solid #555",
-        "border-radius": "8px",
-        "box-shadow": "0 5px 15px rgba(0,0,0,0.5)",
-        "z-index": "1000",
-        color: "#eee",
-        "font-family": "sans-serif",
-        display: "flex",
-        "flex-direction": "column",
       })
+      .on("mousedown", () => this.bringToFront(), true) // Use capture to ensure it fires first
       .appendTo(this.parentElement);
 
     this.header = new Html("div")
-      .style({
-        padding: "8px 10px",
-        "background-color": "#3a3a3a",
-        cursor: "move",
-        "border-top-left-radius": "8px",
-        "border-top-right-radius": "8px",
-        "user-select": "none",
-        display: "flex",
-        "justify-content": "space-between",
-        "align-items": "center",
-        "flex-shrink": "0",
-      })
+      .classOn("daw-window__header")
       .appendTo(this.window);
+    new Html("span")
+      .classOn("daw-window__header-title")
+      .text(this.title)
+      .appendTo(this.header);
 
-    new Html("span").text(this.title).appendTo(this.header);
+    const headerControls = new Html("div")
+      .classOn("daw-window__header-controls")
+      .appendTo(this.header);
+    this.options.controls.forEach((control) =>
+      control.appendTo(headerControls)
+    );
+    createCloseButton(() => this.close()).appendTo(headerControls);
 
-    // Add Close Button
-    const controls = new Html("div").appendTo(this.header);
-    new Html("button")
-      .text("✕")
-      .style({
-        background: "none",
-        border: "none",
-        color: "#ccc",
-        "font-size": "16px",
-        cursor: "pointer",
-        padding: "0 5px",
-      })
-      .on("click", () => this.close())
-      .appendTo(controls);
+    if (this.options.toolbar) {
+      this.options.toolbar.classOn("daw-window__toolbar").appendTo(this.window);
+    }
 
     this.contentArea = new Html("div")
-      .style({
-        "flex-grow": "1",
-        position: "relative",
-        overflow: "auto",
-      })
+      .classOn("daw-window__content")
       .appendTo(this.window);
-
     this.resizeHandle = new Html("div")
-      .style({
-        position: "absolute",
-        bottom: "0px",
-        right: "0px",
-        width: "15px",
-        height: "15px",
-        cursor: "se-resize",
-        "z-index": "1001",
-      })
+      .classOn("daw-window__resize-handle")
       .appendTo(this.window);
-  }
-
-  close() {
-    this.window.cleanup();
   }
 
   makeDraggable() {
-    let isDragging = false;
-    let offsetX, offsetY;
+    let isDragging = false,
+      offsetX,
+      offsetY;
     const onMouseDown = (e) => {
-      if (e.target.tagName === "BUTTON") return;
+      if (
+        e.target.tagName === "BUTTON" ||
+        e.target.tagName === "SELECT" ||
+        e.target.tagName === "INPUT"
+      )
+        return;
       isDragging = true;
       offsetX = e.clientX - this.window.elm.offsetLeft;
       offsetY = e.clientY - this.window.elm.offsetTop;
@@ -116,12 +105,11 @@ export default class BaseWindow {
       document.addEventListener("mouseup", onMouseUp);
     };
     const onMouseMove = (e) => {
-      if (isDragging) {
+      if (isDragging)
         this.window.style({
           left: `${e.clientX - offsetX}px`,
           top: `${e.clientY - offsetY}px`,
         });
-      }
     };
     const onMouseUp = () => {
       isDragging = false;
@@ -134,8 +122,11 @@ export default class BaseWindow {
   makeResizable() {
     const handle = this.resizeHandle.elm;
     const windowElm = this.window.elm;
-    let isResizing = false;
-    let startX, startY, startWidth, startHeight;
+    let isResizing = false,
+      startX,
+      startY,
+      startWidth,
+      startHeight;
     const onMouseDown = (e) => {
       e.preventDefault();
       isResizing = true;
