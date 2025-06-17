@@ -133,9 +133,11 @@ body {
 
 /* === ARRANGEMENT VIEW === */
 .arrangement-track-header {
+  margin-top: 24px;
   flex-shrink: 0;
   background-color: var(--bg-color-medium);
   border-right: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
 }
 .arrangement-track-header__item {
   height: 60px;
@@ -186,7 +188,7 @@ body {
 }
 
 .arrangement-ruler {
-  height: 30px;
+  height: 24px;
   background-color: var(--bg-color-medium);
   border-bottom: 1px solid var(--border-color);
   position: sticky;

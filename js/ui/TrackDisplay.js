@@ -149,7 +149,7 @@ export default class TrackDisplay {
         const beatPosition = Math.max(
           0,
           Math.round(gridX / PIXELS_PER_BEAT / this.quantizeValue) *
-            this.quantizeValue
+          this.quantizeValue
         );
 
         let trackIndex = Math.floor(initialTop / TRACK_HEIGHT);
@@ -158,9 +158,8 @@ export default class TrackDisplay {
         }
 
         blockDiv.style({
-          transform: `translate(${
-            beatPosition * PIXELS_PER_BEAT - initialLeft
-          }px, ${trackIndex * TRACK_HEIGHT + 5 - initialTop}px)`,
+          transform: `translate(${beatPosition * PIXELS_PER_BEAT - initialLeft
+            }px, ${trackIndex * TRACK_HEIGHT + 5 - initialTop}px)`,
         });
       };
 
@@ -177,7 +176,7 @@ export default class TrackDisplay {
         const beatPosition = Math.max(
           0,
           Math.round(finalLeft / PIXELS_PER_BEAT / this.quantizeValue) *
-            this.quantizeValue
+          this.quantizeValue
         );
         blockData.startTime = this._secondsToTimeString(
           beatPosition * (60.0 / this.song.bpm)
@@ -251,15 +250,27 @@ export default class TrackDisplay {
       }
     }
 
-    this.song.tracks.forEach((track) => {
+    let createTrack = (name) => {
       new Html("div")
         .classOn("arrangement-track-header__item")
-        .text(track.name)
+        .text(name)
         .appendTo(this.trackHeaders);
       new Html("div")
         .classOn("arrangement-timeline__lane")
         .appendTo(this.timelineLanes);
+    }
+
+    this.song.tracks.forEach((track) => {
+      createTrack(track.name);
     });
+
+    let createNTButton = (fn) => {
+      let bt;
+      bt = createButton("Add", () => { createTrack(prompt("New Track Name:")); bt.cleanup(); fn() });
+      bt.appendTo(this.trackHeaders);
+    }
+
+    createNTButton(createNTButton);
 
     this.song.arrangement.forEach((block) => {
       const trackIndex = this.song.tracks.findIndex(

@@ -42,9 +42,9 @@ export default class SamplerPlugin extends BasePlugin {
 
   play({ time, duration }) {
     if (!this.audioBuffer || this.isLoading) return;
-    const source = this.audioContext.createBufferSource();
-    source.buffer = this.audioBuffer;
-    source.connect(this.gain);
+    this.source = this.audioContext.createBufferSource();
+    this.source.buffer = this.audioBuffer;
+    this.source.connect(this.gain);
     let offset = 0;
     if (this.syncMode === "transport")
       offset = time % this.audioBuffer.duration;
@@ -56,11 +56,15 @@ export default class SamplerPlugin extends BasePlugin {
     this.gain.gain.linearRampToValueAtTime(1, time + attackTime);
     this.gain.gain.setValueAtTime(1, time + playDuration - releaseTime);
     this.gain.gain.linearRampToValueAtTime(0, time + playDuration);
-    source.start(time, offset, playDuration);
+    this.source.start(time, offset, playDuration);
   }
 
   playImmediate({ pitch, duration }) {
     this.play({ time: this.audioContext.currentTime, duration });
+  }
+
+  stop() {
+    this.source && this.source.stop()
   }
 
   getUI() {

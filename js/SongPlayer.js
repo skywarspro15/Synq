@@ -15,6 +15,7 @@ export default class SongPlayer extends EventEmitter {
     this.noteQueue = [];
     this.nextNoteIndex = 0;
     this.playheadPosition = 0;
+    this.previousPlayheadPosition = 0;
     this.playbackStartTime = 0;
     this.sequencerTimerId = null;
     this.playbackContext = {
@@ -119,6 +120,7 @@ export default class SongPlayer extends EventEmitter {
 
   play() {
     if (!this.isLoaded || this.isPlaying) return;
+    this.previousPlayheadPosition = this.playheadPosition;
     this.isPlaying = true;
     if (this.audioEngine.audioContext.state === "suspended")
       this.audioEngine.audioContext.resume();
@@ -127,6 +129,7 @@ export default class SongPlayer extends EventEmitter {
     this.audioEngine.activePlugins.forEach((p) =>
       p.start(this.playbackStartTime)
     );
+    
     this.seek(this.playheadPosition);
     this._sequencerLoop();
     this.emit("play");
@@ -139,6 +142,7 @@ export default class SongPlayer extends EventEmitter {
     this.audioEngine.activePlugins.forEach((p) => p.stop());
     this.playheadPosition =
       this.audioEngine.audioContext.currentTime - this.playbackStartTime;
+    this.seek(this.previousPlayheadPosition);
     this.emit("stop");
   }
 

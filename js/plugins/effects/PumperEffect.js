@@ -20,10 +20,10 @@ export default class PumperEffect extends BasePlugin {
   }
 
   setParams(params) {
-    if (params.rate !== undefined) this.rate = params.rate;
-    if (params.attack !== undefined) this.attack = params.attack;
-    if (params.release !== undefined) this.release = params.release;
-    if (params.depth !== undefined) this.depth = params.depth;
+    params.rate && (this.rate = params.rate);
+    params.attack && (this.attack = params.attack);
+    params.release && (this.release = params.release);
+    params.depth && (this.depth = params.depth);
   }
 
   start(startTime) {

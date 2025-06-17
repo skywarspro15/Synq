@@ -35,16 +35,16 @@ async function init() {
         params: { sampleUrl: "Pluck.wav" },
         volume: 0.8,
         pan: 0.1,
-        fx: [
-          {
-            plugin: "./plugins/effects/DelayEffect.js",
-            params: { delayTime: 0.461, feedback: 0.3, wet: 0.3 },
-          },
-          {
-            plugin: "./plugins/effects/PumperEffect.js",
-            params: { rate: 4, depth: 0.6, release: 0.18 },
-          },
-        ],
+        // fx: [
+        //   {
+        //     plugin: "./plugins/effects/DelayEffect.js",
+        //     params: { delayTime: 0.461, feedback: 0.3, wet: 0.3 },
+        //   },
+        //   {
+        //     plugin: "./plugins/effects/PumperEffect.js",
+        //     params: { rate: 4, depth: 1.0, release: 0.10 },
+        //   },
+        // ],
       },
     ],
     tracks: [{ name: "Kick" }, { name: "Clap" }, { name: "Melody" }],
@@ -67,7 +67,7 @@ async function init() {
       },
       synth_pattern: {
         instrument: "Melody",
-        notes: [{ startTime: "1:1:0", pitch: "C#4", duration: 17.9 }],
+        notes: [{ startTime: "1:1:0", pitch: "C#4", duration: 15 }],
       },
     },
     arrangement: [
