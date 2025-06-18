@@ -18,6 +18,12 @@
   --playhead-color: rgba(255, 80, 80, 0.8);
 }
 
+* {
+  overscroll-behavior-y: none;  /* Block only vertical over-scroll */
+  overscroll-behavior-x: none;  /* Block horizontal too if needed */
+}
+
+
 /* === BASE & LAYOUT === */
 body {
   background-color: var(--bg-color-darkest);

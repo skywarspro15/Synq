@@ -49,6 +49,14 @@ async function init() {
         //   },
         // ],
       },
+      {
+        name: "OSC Test",
+        id: 3,
+        plugin: "./plugins/instruments/BasicSynth.js",
+        params: {waveform: "sine"},
+        volume: 0.4,
+        pan: 0,
+      }
     ],
     // tracks: [{ name: "Kick" }, { name: "Clap" }, { name: "Melody" }],
     patterns: {
@@ -69,8 +77,12 @@ async function init() {
       synth_pattern: {
         notes: [{ startTime: "1:1:0", pitch: "C#4", duration: 15 }],
       },
+      bass_pattern: {
+        notes: [{ startTime: "1:1:0", pitch: "G#1", duration: 15 }]
+      }
     },
     arrangement: [
+      { patternName: "bass_pattern", startTime: "1:1:0", instrument: 3 },
       { patternName: "synth_pattern", startTime: "1:1:0", instrument: 2 },
       {
         patternName: "kick_sampler_pattern",

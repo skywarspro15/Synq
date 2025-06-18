@@ -12,7 +12,9 @@ export default class BasicSynth extends BasePlugin {
 
     this.oscillator.connect(this.gain);
     this.output = this.gain;
-    this.id = "osc";
+    this.id = "osc";2
+    this.attack = 0.02;
+    this.release = 0.05;
 
     this.gain.gain.value = 0;
     this.setParams(initialParams);
@@ -20,21 +22,23 @@ export default class BasicSynth extends BasePlugin {
   }
 
   setParams(params) {
-    if (params.waveform) {
-      this.oscillator.type = params.waveform;
-    }
+    params.waveform && (this.oscillator.type = params.waveform);
+    params.attack && (this.attack = params.attack)
+    params.release && (this.release = params.release)
   }
 
   play({ pitch, time, duration }) {
     const freq = this.hertz(pitch);
     if (!freq) return;
-    const attackTime = 0.02;
-    const releaseTime = 0.3;
     this.oscillator.frequency.setValueAtTime(freq, time);
     this.gain.gain.cancelScheduledValues(time);
     this.gain.gain.setValueAtTime(0, time);
-    this.gain.gain.linearRampToValueAtTime(0.5, time + attackTime);
-    this.gain.gain.linearRampToValueAtTime(0, time + duration + releaseTime);
+    this.gain.gain.linearRampToValueAtTime(0.5, time + this.attack);
+    this.gain.gain.linearRampToValueAtTime(0, time + duration + this.release);
+  }
+
+  stop() {
+    this.gain.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + this.release);
   }
 
   playImmediate({ pitch, duration = 0.2 }) {
