@@ -40,7 +40,9 @@ export default class SongPlayer extends EventEmitter {
     this.noteQueue = [];
     for (const block of this.song.arrangement) {
       const pattern = this.song.patterns[block.patternName];
-      const instrument = this.instruments.get(pattern.instrument);
+      const instrument = this.instruments.get(
+        block.instrument
+      );
       const blockStartTime = this._timeStringToSeconds(block.startTime);
       if (!instrument) continue;
       for (const note of pattern.notes) {
@@ -90,7 +92,7 @@ export default class SongPlayer extends EventEmitter {
             fxInstance.setParams(effect.params);
         }
       }
-      this.instruments.set(inst.name, instrumentInstance);
+      this.instruments.set(inst.id, instrumentInstance);
     }
     this._prepareNoteQueue();
     this.isLoaded = true;

@@ -15,6 +15,7 @@ export default class PumperEffect extends BasePlugin {
     this.gain = this.audioContext.createGain();
     this.input = this.gain;
     this.output = this.gain;
+    this.id = "sc";
 
     this.setParams(initialParams);
   }

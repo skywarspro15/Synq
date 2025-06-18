@@ -6,6 +6,7 @@ export default class BasePlugin {
       new (window.AudioContext || window.webkitAudioContext)();
     this.input = null;
     this.output = null;
+    this.id = "editme"; // adding id because id-ing through names is weird
   }
 
   static isInstrument = false;

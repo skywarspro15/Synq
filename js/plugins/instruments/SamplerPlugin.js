@@ -12,6 +12,7 @@ export default class SamplerPlugin extends BasePlugin {
     this.syncMode = null;
     this.gain = this.audioContext.createGain();
     this.output = this.gain;
+    this.id = "player";
     this.setParams(initialParams);
   }
 

@@ -13,6 +13,7 @@ async function init() {
     instruments: [
       {
         name: "Sampled Kick",
+        id: 0,
         plugin: "./plugins/instruments/SamplerPlugin.js",
         params: {
           sampleUrl: "kick.wav",
@@ -22,6 +23,7 @@ async function init() {
       },
       {
         name: "Sampled Clap",
+        id: 1,
         plugin: "./plugins/instruments/SamplerPlugin.js",
         params: {
           sampleUrl: "clap.wav",
@@ -31,6 +33,7 @@ async function init() {
       },
       {
         name: "Melody",
+        id: 2,
         plugin: "./plugins/instruments/SamplerPlugin.js",
         params: { sampleUrl: "Pluck.wav" },
         volume: 0.8,
@@ -47,10 +50,9 @@ async function init() {
         // ],
       },
     ],
-    tracks: [{ name: "Kick" }, { name: "Clap" }, { name: "Melody" }],
+    // tracks: [{ name: "Kick" }, { name: "Clap" }, { name: "Melody" }],
     patterns: {
       kick_sampler_pattern: {
-        instrument: "Sampled Kick",
         notes: [
           { startTime: "1:1:0", pitch: "C2", duration: 0.1 },
           { startTime: "1:2:0", pitch: "C2", duration: 0.1 },
@@ -59,97 +61,95 @@ async function init() {
         ],
       },
       clap_sampler_pattern: {
-        instrument: "Sampled Clap",
         notes: [
           { startTime: "1:2:0", pitch: "C2", duration: 0.1 },
           { startTime: "1:4:0", pitch: "C2", duration: 0.1 },
         ],
       },
       synth_pattern: {
-        instrument: "Melody",
         notes: [{ startTime: "1:1:0", pitch: "C#4", duration: 15 }],
       },
     },
     arrangement: [
-      { trackName: "Melody", patternName: "synth_pattern", startTime: "1:1:0" },
+      { patternName: "synth_pattern", startTime: "1:1:0", instrument: 2 },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "1:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "1:1:0",
       },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "2:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "2:1:0",
       },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "3:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "3:1:0",
       },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "4:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "4:1:0",
       },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "5:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "5:1:0",
       },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "6:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "6:1:0",
       },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "7:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "7:1:0",
       },
       {
-        trackName: "Kick",
         patternName: "kick_sampler_pattern",
+				instrument: 0,
         startTime: "8:1:0",
       },
       {
-        trackName: "Clap",
         patternName: "clap_sampler_pattern",
+				instrument: 1,
         startTime: "8:1:0",
       },
     ],

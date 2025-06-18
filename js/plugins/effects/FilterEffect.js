@@ -16,6 +16,7 @@ export default class FilterEffect extends BasePlugin {
     this.filterNode = this.audioContext.createBiquadFilter();
     this.input = this.filterNode;
     this.output = this.filterNode;
+    this.id = "filter";
     this.setParams({ ...FilterEffect.getDefaults(), ...initialParams });
   }
 

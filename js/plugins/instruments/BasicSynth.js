@@ -12,6 +12,7 @@ export default class BasicSynth extends BasePlugin {
 
     this.oscillator.connect(this.gain);
     this.output = this.gain;
+    this.id = "osc";
 
     this.gain.gain.value = 0;
     this.setParams(initialParams);

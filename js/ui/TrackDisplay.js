@@ -1,3 +1,4 @@
+import { clamp } from "../libs/helper.js";
 import Html from "../libs/html.js";
 import BaseWindow from "./BaseWindow.js";
 import PianoRoll from "./PianoRoll.js";
@@ -115,7 +116,7 @@ export default class TrackDisplay {
       if (this.clickTimeout) {
         clearTimeout(this.clickTimeout);
         this.clickTimeout = null;
-        const instrument = this.songPlayer.instruments.get(pattern.instrument);
+        const instrument = this.songPlayer.instruments.get(blockData.instrument);
         new PianoRoll(pattern, startSeconds, this.songPlayer, instrument, () =>
           this.songPlayer.rebuildNoteQueue()
         );
@@ -182,15 +183,17 @@ export default class TrackDisplay {
           beatPosition * (60.0 / this.song.bpm)
         );
 
-        let trackIndex = this.song.tracks.findIndex(
-          (t) => t.name === blockData.trackName
+        let trackIndex = this.song.instruments.findIndex(
+          (t) => t.id === blockData.instrument
         );
+        
         if (Math.abs(upEvent.clientY - startY) > DRAG_Y_THRESHOLD) {
-          trackIndex = Math.floor(finalTop / TRACK_HEIGHT);
+          trackIndex = clamp(Math.floor(finalTop / TRACK_HEIGHT), 0, this.song.instruments.length - 1);
         }
-        if (this.song.tracks[trackIndex])
-          blockData.trackName = this.song.tracks[trackIndex].name;
-
+        if (this.song.instruments[trackIndex])
+          blockData.instrument = this.song.instruments[trackIndex].id;
+        else
+          console.log("Something is wrong with dragging, tried placing pattern at index", trackIndex);
         this.songPlayer.rebuildNoteQueue();
         this.renderArrangement();
       };
@@ -230,7 +233,7 @@ export default class TrackDisplay {
     );
     const totalBeats = maxDurationSeconds / (60.0 / this.song.bpm);
     const totalWidth = totalBeats * PIXELS_PER_BEAT;
-    const totalHeight = this.song.tracks.length * TRACK_HEIGHT;
+    const totalHeight = this.song.instruments.length * TRACK_HEIGHT;
     this.timelineContent.style({
       width: `${totalWidth}px`,
       height: `${totalHeight}px`,
@@ -260,25 +263,25 @@ export default class TrackDisplay {
         .appendTo(this.timelineLanes);
     }
 
-    this.song.tracks.forEach((track) => {
+    this.song.instruments.forEach((track) => {
       createTrack(track.name);
     });
 
-    let createNTButton = (fn) => {
-      let bt;
-      bt = createButton("Add", () => { createTrack(prompt("New Track Name:")); bt.cleanup(); fn() });
-      bt.appendTo(this.trackHeaders);
-    }
+    // let createNTButton = (fn) => {
+    //   let bt;
+    //   bt = createButton("Add", () => { createTrack(prompt("New Track Name:")); bt.cleanup(); fn() });
+    //   bt.appendTo(this.trackHeaders);
+    // }
 
-    createNTButton(createNTButton);
+    // createNTButton(createNTButton);
 
     this.song.arrangement.forEach((block) => {
-      const trackIndex = this.song.tracks.findIndex(
-        (t) => t.name === block.trackName
+      const trackIndex = this.song.instruments.findIndex(
+        (t) => t.id === block.instrument
       );
       if (trackIndex === -1) return;
       const pattern = this.song.patterns[block.patternName];
-      const instrument = this.songPlayer.instruments.get(pattern.instrument);
+      const instrument = this.songPlayer.instruments.get(block.instrument);
       const startSeconds = this._timeStringToSeconds(block.startTime);
       const durationSeconds = this._getPatternDurationInSeconds(pattern);
       const left = (startSeconds / (60.0 / this.song.bpm)) * PIXELS_PER_BEAT;

@@ -25,6 +25,7 @@ export default class DelayEffect extends BasePlugin {
     this.delayNode.connect(this.wetNode);
     this.wetNode.connect(this.output);
     this.input.connect(this.output);
+    this.id = "delay";
 
     this.setParams({ ...DelayEffect.getDefaults(), ...initialParams });
   }
